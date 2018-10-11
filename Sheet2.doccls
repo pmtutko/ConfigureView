@@ -1,0 +1,40 @@
+﻿Option Explicit
+
+Private Sub Worksheet_Change(ByVal Target As Range)
+    Dim editArea As Range
+    Dim dbNameArea As Range
+    Dim selectAllBox As Range
+    Set editArea = ProjectGlobal.ProjectEditableArea().Columns(2)
+    Set dbNameArea = ProjectGlobal.ProjectEditableArea().Columns(1)
+    Set selectAllBox = ProjectGlobal.ProjectSelectAllCell()
+    
+    Dim i As Long
+    Dim pvm As ProjectsModel
+    Dim projectIndex As Long
+    Dim projInfo As ProjectInfo
+    If Not Union(editArea, Target) Is Nothing Then
+        Set pvm = ProjectGlobal.ConnectToModel()
+        For i = 1 To Target.Rows.Count
+            projectIndex = ProjectGlobal.ProjectRowIndex(Target.Rows(i).Row)
+            Set projInfo = pvm.GetProject(projectIndex)
+            '--- this was just edited by the user, but re-apply the edit
+            '    through the Info object for validation
+            projInfo.FullPath = Target.Rows(i).Value
+        Next i
+        
+    ElseIf Not Union(dbNameArea, Target) Is Nothing Then
+        Set pvm = ProjectGlobal.ConnectToModel()
+        For i = 1 To Target.Rows.Count
+            projectIndex = ProjectGlobal.ProjectRowIndex(Target.Rows(i).Row)
+            Set projInfo = pvm.GetProject(projectIndex)
+            '--- this was just edited by the user, but re-apply the edit
+            '    through the Info object for validation
+            projInfo.NameInDB = Target.Rows(i).Value
+        Next i
+        
+    ElseIf Not Union(selectAllBox, Target) Then
+        ProjectSelect.CheckUncheckAll
+        
+    End If
+    
+End Sub
